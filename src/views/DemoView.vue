@@ -1,50 +1,64 @@
-<script setup>
-import { ref, computed } from "vue";
-import EditModal from "../components/EditModal.vue";
-import users from "../assets/data.JSON";
+<script>
+import EditModal from "@/components/EditModal.vue";
+import users from "@/assets/data.JSON";
+import { Message } from "element-ui";
 
-// Getting data
-const names = ref(users.users);
-// vars
-let hardcoded = 10;
+export default {
+  components: {
+    EditModal,
+  },
+  data() {
+    return {
+      names: users.users,
+      genders: users.genders,
+      hardcoded: 10,
+      search: "",
+      searchGender: "",
+    };
+  },
+  computed: {
+    filteredNames() {
+      return this.names.filter(
+        (entry) =>
+          entry.name.includes(this.search) &&
+          (!this.searchGender || entry.gender == this.searchGender)
+      );
+    },
+  },
+  methods: {
+    deleteRow(id) {
+      this.names = this.names.filter((entry) => entry.id !== id);
+    },
+    createUser(user) {
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
 
-// For searching
-const search = ref("");
-const searchGender = ref("");
-const resetSearch = () => {
-  search.value = "";
-  searchGender.value = "";
-};
-
-// Grid Display
-const filteredNames = computed(() =>
-  names.value.filter(
-    (entry) =>
-      entry.name.includes(search.value) &&
-      (!searchGender.value || entry.gender == searchGender.value)
-  )
-);
-
-// Grid Deletion
-function deleteRow(id) {
-  names.value = names.value.filter((entry) => entry.id != id);
-}
-
-// Create User
-const createUser = (user) => {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-
-  names.value.push({
-    id: hardcoded,
-    name: user.name,
-    gender: user.gender,
-    cell: user.cell,
-    date: year + "-" + month + "-" + day,
-  });
-  hardcoded += 1;
+      this.names.push({
+        id: this.hardcoded,
+        name: user.name,
+        gender: user.gender,
+        cell: user.cell,
+        date: `${year}-${month}-${day}`,
+      });
+      this.hardcoded += 1;
+      Message.success("用户创建成功");
+    },
+    updateUser(updatedUser) {
+      const user = this.names.find((entry) => entry.id === updatedUser.id);
+      if (user) {
+        user.name = updatedUser.name;
+        user.gender = updatedUser.gender;
+        user.cell = updatedUser.cell;
+        Message.success("用户信息更新成功");
+      }
+    },
+    resetSearch() {
+      this.search = "";
+      this.searchGender = "";
+    },
+  },
 };
 </script>
 
@@ -57,7 +71,7 @@ const createUser = (user) => {
 
       <el-select v-model="searchGender" placeholder="性别搜索" clearable>
         <el-option
-          v-for="item in users.genders"
+          v-for="item in genders"
           :key="item.value"
           :label="item.label"
           :value="item.value"

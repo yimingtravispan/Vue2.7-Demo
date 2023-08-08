@@ -1,43 +1,3 @@
-<script setup>
-import { defineProps, defineEmits, ref } from "vue";
-
-const props = defineProps({
-  add: Boolean,
-  user: Object,
-});
-
-const emit = defineEmits(["finalize"]);
-
-const display = ref(false);
-
-// function for name input
-const _name = props.add ? ref("") : ref(props.user.name);
-// function for gender input
-const _gender = props.add ? ref("") : ref(props.user.gender);
-// function for cell input
-const _cell = props.add ? ref("") : ref(props.user.cell);
-
-const Gender = ref("1");
-
-const close = () => {
-  display.value = false;
-};
-
-const submit = (user) => {
-  display.value = false;
-  emit("finalize", user);
-};
-
-const open = () => {
-  if (props.add) {
-    _name.value = "";
-    _gender.value = "";
-    _cell.value = "";
-  }
-  display.value = true;
-};
-</script>
-
 <template>
   <div>
     <el-button
@@ -65,41 +25,18 @@ const open = () => {
         </div>
 
         <div class="modal-body">
-          <input v-model="_name" />
-          <p class="error" v-if="!_name">姓名不可为空</p>
+          <input v-model="tempName" />
+          <p class="error" v-if="!tempName">姓名不可为空</p>
         </div>
 
-        <!--
-        <div class="modal-body">
-          <div>
-            <input
-              type="radio"
-              name="genderoption"
-              value="男"
-              v-model="_gender"
-            />
-            <label>男</label>
-
-            <input
-              type="radio"
-              name="genderoption"
-              value="女"
-              v-model="_gender"
-            />
-            <label>女</label>
-          </div>
-          <p class="error" v-if="!_gender">姓别不可为空</p>
-        </div>
-        -->
-
-        <el-radio-group v-model="_gender">
+        <el-radio-group v-model="tempGender">
           <el-radio label="男">男</el-radio>
           <el-radio label="女">女</el-radio>
         </el-radio-group>
 
         <div class="modal-body">
-          <input v-model="_cell" />
-          <p class="error" v-if="!_cell">联系电话不可为空</p>
+          <input v-model="tempCell" />
+          <p class="error" v-if="!tempCell">联系电话不可为空</p>
         </div>
 
         <div class="modal-footer">
@@ -108,8 +45,10 @@ const open = () => {
           </button>
           <button
             class="modal-default-button"
-            :disabled="!_name || !_gender || !_cell"
-            @click="submit({ name: _name, gender: _gender, cell: _cell })"
+            :disabled="!tempName || !tempGender || !tempCell"
+            @click="
+              submit({ name: tempName, gender: tempGender, cell: tempCell })
+            "
           >
             完成
           </button>
@@ -118,6 +57,40 @@ const open = () => {
     </div>
   </div>
 </template>
+
+<script>
+export default {
+  props: {
+    add: Boolean,
+    user: Object,
+  },
+  data() {
+    return {
+      display: false,
+      tempName: this.add ? "" : this.user.name,
+      tempGender: this.add ? "" : this.user.gender,
+      tempCell: this.add ? "" : this.user.cell,
+    };
+  },
+  methods: {
+    close() {
+      this.display = false;
+    },
+    submit(user) {
+      this.display = false;
+      this.$emit("finalize", user);
+    },
+    open() {
+      if (this.add) {
+        this.tempName = "";
+        this.tempGender = "";
+        this.tempCell = "";
+      }
+      this.display = true;
+    },
+  },
+};
+</script>
 
 <style>
 .modal-mask {
